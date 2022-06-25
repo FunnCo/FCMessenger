@@ -31,7 +31,7 @@ class UserController {
     fun updateUserInfo(@RequestHeader("Authorization") token: String, @RequestBody newInfo: RequestUserModel){
         val currentUser = RestControllerUtil.getUserByToken(userRepository, token)
         if(UserUtil.isNumberValid(newInfo.phone!!)){
-            RestControllerUtil.throwException("Invalid phone number")
+            RestControllerUtil.throwException(RestControllerUtil.HTTPResponseStatus.BAD_REQUEST, "Invalid phone number")
         }
         currentUser.phone = newInfo.phone
         currentUser.patronymic = newInfo.patronymic
@@ -47,7 +47,7 @@ class UserController {
     fun getUserInfo(@RequestHeader("Authorization") token: String, @RequestParam phone: String): ResponseUserModel{
         val requestedUser = RestControllerUtil.getUserByToken(userRepository, token)
         if(UserUtil.isNumberValid(phone)){
-            RestControllerUtil.throwException("Invalid phone number")
+            RestControllerUtil.throwException(RestControllerUtil.HTTPResponseStatus.BAD_REQUEST, "Invalid phone number")
         }
 
         val responseUser = ResponseUserModel()

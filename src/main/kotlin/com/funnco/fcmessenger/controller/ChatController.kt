@@ -52,7 +52,7 @@ class ChatController {
         @RequestBody requestedChat: RequestChatCreationModel
     ): ResponseChatModel {
         val currentUser = RestControllerUtil.getUserByToken(userRepository, token)
-        if (requestedChat.chatMembersPhones.size == 1) {
+        if (requestedChat.chatMembersPhones.distinct().size == 1) {
             return createPrivateChat(requestedChat, currentUser)
         }
         return createGroupChat(requestedChat, currentUser)
@@ -255,9 +255,14 @@ class ChatController {
                 responseUsers.add(user.refUserEntity!!.getResponseModel())
             }
 
+            var responseChatName = item.refChatEntity!!.chatName!!
+            if(responseUsers.size == 1){
+                responseChatName = responseUsers[0].lastname!! + " " + responseUsers[0].firstname
+            }
+
             val chat = ResponseChatModel(
                 chatId = item.refChatEntity!!.id!!.toString(),
-                chatName = item.refChatEntity!!.chatName!!,
+                chatName = responseChatName,
                 avatarFilepath = item.refChatEntity!!.avatarFileName!!,
                 chatMembers = responseUsers
             )
@@ -266,7 +271,7 @@ class ChatController {
         return resultList
     }
 
-    @PostMapping("/chatr/change/avatar")
+    @PostMapping("/chat/change/avatar")
     fun chatChangeAbout(
         @RequestHeader("Authorization") token: String,
         @RequestParam("image") image: MultipartFile,
@@ -276,11 +281,11 @@ class ChatController {
         image.transferTo(File("/usr/local/bin/server-exec/resources/chat/chat_${HashingUtil.md5Hash(currentUser.phone!!)}_avatar.png"))
 
         val currentChat = chatRepository.findByIdOrNull(UUID.fromString(chatId))
-        currentChat!!.avatarFileName = "chat_${HashingUtil.md5Hash(currentChat.id!!.toString())}_avatar.png"
+        currentChat!!.avatarFileName = "chat_${HashingUtil.md5Hash(currentUser.phone!!)}_avatar.png"
         chatRepository.save(currentChat)
     }
 
-    @PostMapping("/chatr/change/name")
+    @PostMapping("/chat/change/name")
     fun chatChangeName(
         @RequestHeader("Authorization") token: String,
         @RequestParam newName: String,

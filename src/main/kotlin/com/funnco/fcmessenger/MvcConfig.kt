@@ -12,7 +12,10 @@ import java.io.File
 class MvcConfig: WebMvcConfigurer {
     override fun addResourceHandlers(registry: ResourceHandlerRegistry) {
         registry
-            .addResourceHandler("/resources/image/**")
-            .addResourceLocations("file:///C:/fileuploads/messenger/user/resources/")
+            .addResourceHandler("/resources/image/chat/**")
+            .addResourceLocations("file:/usr/local/bin/server-exec/resources/chat/")
+        registry
+            .addResourceHandler("/resources/image/user/**")
+            .addResourceLocations("file:/usr/local/bin/server-exec/resources/user/")
     }
 }

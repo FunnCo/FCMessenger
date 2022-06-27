@@ -64,13 +64,9 @@ class UserController {
     @PostMapping("/user/change/avatar")
     fun userChangeAvatar(@RequestHeader("Authorization") token: String, @RequestParam("image") image: MultipartFile){
         val currentUser = RestControllerUtil.getUserByToken(userRepository, token as String)
-        image.transferTo( File("C:\\fileuploads\\messenger\\user\\resources\\user_${HashingUtil.md5Hash(currentUser.phone!!)}_avatar.png"))
+        image.transferTo(File("/usr/local/bin/server-exec/resources/user/user_${HashingUtil.md5Hash(currentUser.phone!!)}_avatar.png"))
 
         currentUser.avatarFilename = "user_${HashingUtil.md5Hash(currentUser.phone!!)}_avatar.png"
         userRepository.save(currentUser)
     }
-
-
-
-
 }

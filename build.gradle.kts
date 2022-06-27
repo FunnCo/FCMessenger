@@ -1,5 +1,9 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
+tasks.bootJar {
+    launchScript()
+}
+
 plugins {
     id("org.springframework.boot") version "2.7.0"
     id("io.spring.dependency-management") version "1.0.11.RELEASE"
@@ -32,6 +36,10 @@ tasks.withType<KotlinCompile> {
         freeCompilerArgs = listOf("-Xjsr305=strict")
         jvmTarget = "17"
     }
+}
+
+springBoot {
+    mainClass.set("com.funnco.fcmessenger.FcMessengerApplicationKt")
 }
 
 tasks.withType<Test> {

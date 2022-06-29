@@ -2,6 +2,7 @@ package com.funnco.fcmessenger.controller
 
 import com.funnco.fcmessenger.entity.UserEntity
 import com.funnco.fcmessenger.model.request.RequestUserModel
+import com.funnco.fcmessenger.model.response.ResponseTokenHolderModel
 import com.funnco.fcmessenger.repository.UserRepository
 import com.funnco.fcmessenger.utils.HashingUtil
 import com.funnco.fcmessenger.utils.RestControllerUtil
@@ -35,7 +36,7 @@ class AuthController {
     }
 
     @GetMapping("/user/login")
-    fun authViaPassword(@RequestParam email: String, password: String) : Any?{
+    fun authViaPassword(@RequestParam email: String, password: String) : ResponseTokenHolderModel?{
         println("$TAG, /user/login: received request with email $email")
 
         var userPassword = password
@@ -57,7 +58,7 @@ class AuthController {
             currentUser.token =  UUID.fromString(userRepository.generateToken(currentUser.userUid!!))
             userRepository.save(currentUser)
         }
-        return object {val token = currentUser.token}
+        return ResponseTokenHolderModel(currentUser.token!!.toString())
     }
 
     @PostMapping("/user/register")

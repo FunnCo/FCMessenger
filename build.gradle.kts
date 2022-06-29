@@ -29,6 +29,8 @@ dependencies {
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     runtimeOnly("org.postgresql:postgresql")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+
+    implementation("io.springfox:springfox-swagger2:3.0.0")
 }
 
 tasks.withType<KotlinCompile> {

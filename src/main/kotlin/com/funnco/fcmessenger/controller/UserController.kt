@@ -45,13 +45,16 @@ class UserController {
 
     @GetMapping("/user/info")
     fun getUserInfo(@RequestHeader("Authorization") token: String, @RequestParam phone: String): ResponseUserModel{
-        val requestedUser = RestControllerUtil.getUserByToken(userRepository, token)
+        val authorizedUser = RestControllerUtil.getUserByToken(userRepository, token)
         if(UserUtil.isNumberValid(phone)){
             RestControllerUtil.throwException(RestControllerUtil.HTTPResponseStatus.BAD_REQUEST, "Invalid phone number")
         }
-
+        val requestedUser = userRepository.findByPhone(phone)
+        if (requestedUser == null) {
+            RestControllerUtil.throwException(RestControllerUtil.HTTPResponseStatus.NOT_FOUND, "User with requested phone is not found")
+        }
         val responseUser = ResponseUserModel()
-        responseUser.email = requestedUser.email
+        responseUser.email = requestedUser!!.email
         responseUser.phone = requestedUser.phone
         responseUser.firstname = requestedUser.firstname
         responseUser.lastname = requestedUser.lastname

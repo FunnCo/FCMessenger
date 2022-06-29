@@ -285,7 +285,7 @@ class ChatController {
         chatRepository.save(currentChat)
     }
 
-    @PostMapping("/chat/change/name")
+    @PutMapping("/chat/change/name")
     fun chatChangeName(
         @RequestHeader("Authorization") token: String,
         @RequestParam newName: String,

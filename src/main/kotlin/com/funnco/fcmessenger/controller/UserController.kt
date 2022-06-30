@@ -38,8 +38,9 @@ class UserController {
         currentUser.lastname = newInfo.lastname
         currentUser.firstname = newInfo.firstname
         currentUser.email = newInfo.email
-        currentUser.password = HashingUtil.hashPassword(newInfo.password!!, currentUser!!.userUid!!)
-
+        if(newInfo.password != null){
+            currentUser.password = HashingUtil.hashPassword(newInfo.password!!, currentUser.userUid!!)
+        }
         userRepository.save(currentUser)
     }
 

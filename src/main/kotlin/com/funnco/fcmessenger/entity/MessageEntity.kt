@@ -1,5 +1,7 @@
 package com.funnco.fcmessenger.entity
 
+import com.funnco.fcmessenger.model.response.ResponseMessageModel
+import com.funnco.fcmessenger.model.response.ResponseUserModel
 import org.hibernate.annotations.Type
 import java.sql.Timestamp
 import java.util.UUID
@@ -30,5 +32,13 @@ class MessageEntity {
     @JoinColumn(name = "user_uid", referencedColumnName = "user_uid")
     var refUserEntity: UserEntity? = null
 
+    fun parseToResponse(): ResponseMessageModel {
+        return ResponseMessageModel(
+            creationTime!!,
+            messageContent!!,
+            refUserEntity!!.getResponseModel(),
+            null
+        )
+    }
 }
 

@@ -4,5 +4,6 @@ class ResponseChatModel(
     val chatId: String,
     val chatName: String,
     val avatarFilepath: String,
-    val chatMembers: List<ResponseUserModel>
+    val chatMembers: List<ResponseUserModel>,
+    val lastMessage: ResponseMessageModel?
 )

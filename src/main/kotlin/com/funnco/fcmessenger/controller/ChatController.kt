@@ -98,7 +98,8 @@ class ChatController {
             newChat.id!!.toString(),
             secondUser.lastname!!,
             newChat.avatarFileName!!,
-            responseUsers
+            responseUsers,
+            null
         )
     }
 
@@ -141,7 +142,7 @@ class ChatController {
             listOfMembers.add(member.getResponseModel())
         }
         chatMemberRepository.saveAll(listOfEntries)
-        return ResponseChatModel(newChat.id!!.toString(), newChat.chatName!!, newChat.avatarFileName!!, listOfMembers)
+        return ResponseChatModel(newChat.id!!.toString(), newChat.chatName!!, newChat.avatarFileName!!, listOfMembers, null)
     }
 
     @PostMapping("/chat/post/message")
@@ -179,7 +180,7 @@ class ChatController {
             RestControllerUtil.throwException(RestControllerUtil.HTTPResponseStatus.NOT_FOUND, "Chat with this id is not found in your list of chats")
         }
 
-        val messageEntities = messageRepository.findByRefChatEntityOrderByCreationTime(currentChat!!)
+        val messageEntities = messageRepository.findByRefChatEntityOrderByCreationTimeDesc(currentChat!!)
         val response = mutableListOf<ResponseMessageModel>()
         for (item in messageEntities) {
             response.add(
@@ -264,7 +265,8 @@ class ChatController {
                 chatId = item.refChatEntity!!.id!!.toString(),
                 chatName = responseChatName,
                 avatarFilepath = item.refChatEntity!!.avatarFileName!!,
-                chatMembers = responseUsers
+                chatMembers = responseUsers,
+                messageRepository.findByRefChatEntityOrderByCreationTimeDesc(item.refChatEntity!!).last().parseToResponse()
             )
             resultList.add(chat)
         }

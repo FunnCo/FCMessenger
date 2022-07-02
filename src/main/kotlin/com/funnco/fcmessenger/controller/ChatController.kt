@@ -180,12 +180,12 @@ class ChatController {
             RestControllerUtil.throwException(RestControllerUtil.HTTPResponseStatus.NOT_FOUND, "Chat with this id is not found in your list of chats")
         }
 
-        val messageEntities = messageRepository.findByRefChatEntityOrderByCreationTimeDesc(currentChat!!)
+        val messageEntities = messageRepository.findByRefChatEntityOrderByCreationTimeDesc(currentChat!!)!!
         val response = mutableListOf<ResponseMessageModel>()
         for (item in messageEntities) {
             response.add(
                 ResponseMessageModel(
-                    item.creationTime!!,
+                    item!!.creationTime!!,
                     item.messageContent!!,
                     item.refUserEntity!!.getResponseModel(),
                     item.messageExtra
@@ -257,7 +257,7 @@ class ChatController {
             }
 
             var responseChatName = item.refChatEntity!!.chatName!!
-            if(responseUsers.size == 1){
+            if(responseUsers.size == 2){
                 responseChatName = responseUsers[0].lastname!! + " " + responseUsers[0].firstname
             }
 
@@ -266,7 +266,7 @@ class ChatController {
                 chatName = responseChatName,
                 avatarFilepath = item.refChatEntity!!.avatarFileName!!,
                 chatMembers = responseUsers,
-                messageRepository.findByRefChatEntityOrderByCreationTimeDesc(item.refChatEntity!!).last().parseToResponse()
+                messageRepository.findByRefChatEntityOrderByCreationTimeDesc(item.refChatEntity!!)?.last()?.parseToResponse()
             )
             resultList.add(chat)
         }

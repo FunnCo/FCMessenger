@@ -65,8 +65,9 @@ class ChatController {
             RestControllerUtil.throwException(RestControllerUtil.HTTPResponseStatus.NOT_FOUND, "Second user not found")
         }
         newChat.chatName = chatCreator.userUid.toString() + "___" + secondUser!!.userUid.toString()
+        val anotherVariantOfName = secondUser.userUid.toString() + "___" + chatCreator.userUid.toString()
 
-        if (chatRepository.findByChatName(newChat.chatName) != null) {
+        if (chatRepository.findByChatName(newChat.chatName) != null || chatRepository.findByChatName(anotherVariantOfName) != null) {
             RestControllerUtil.throwException(
                 RestControllerUtil.HTTPResponseStatus.BAD_REQUEST,
                 "This chat already exists"
@@ -290,13 +291,14 @@ class ChatController {
             }
 
             var responseChatName = item.refChatEntity!!.chatName!!
-            if (responseUsers.size == 2) {
+            if (responseUsers.size == 2 && responseChatName.matches("^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}___[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}\$".toRegex())) {
                 responseChatName = responseUsers[0].lastname!! + " " + responseUsers[0].firstname
             }
             var lastMessage: ResponseMessageModel?
             try {
-                lastMessage = messageRepository.findByRefChatEntityOrderByCreationTimeDesc(item.refChatEntity!!)?.first()
-                    ?.parseToResponse()
+                lastMessage =
+                    messageRepository.findByRefChatEntityOrderByCreationTimeDesc(item.refChatEntity!!)?.first()
+                        ?.parseToResponse()
             } catch (e: NoSuchElementException) {
                 lastMessage = null
             }
@@ -307,7 +309,7 @@ class ChatController {
                 avatarFilepath = item.refChatEntity!!.avatarFileName!!,
                 chatMembers = responseUsers,
                 lastMessage
-                )
+            )
             resultList.add(chat)
         }
         return resultList

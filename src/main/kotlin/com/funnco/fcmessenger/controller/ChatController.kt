@@ -67,7 +67,10 @@ class ChatController {
         newChat.chatName = chatCreator.userUid.toString() + "___" + secondUser!!.userUid.toString()
 
         if (chatRepository.findByChatName(newChat.chatName) != null) {
-            RestControllerUtil.throwException(RestControllerUtil.HTTPResponseStatus.BAD_REQUEST, "This chat already exists")
+            RestControllerUtil.throwException(
+                RestControllerUtil.HTTPResponseStatus.BAD_REQUEST,
+                "This chat already exists"
+            )
         }
 
         newChat.avatarFileName = "defaultChatAvatar.png"
@@ -105,7 +108,10 @@ class ChatController {
 
     private fun createGroupChat(requestedChat: RequestChatCreationModel, chatCreator: UserEntity): ResponseChatModel {
         if (chatRepository.findByChatName(requestedChat.chatName) != null) {
-            RestControllerUtil.throwException(RestControllerUtil.HTTPResponseStatus.BAD_REQUEST, "This chat already exists")
+            RestControllerUtil.throwException(
+                RestControllerUtil.HTTPResponseStatus.BAD_REQUEST,
+                "This chat already exists"
+            )
         }
 
         var newChat = ChatEntity()
@@ -129,7 +135,10 @@ class ChatController {
         for (phone in requestedChat.chatMembersPhones) {
             val member = userRepository.findByPhone(phone)
             if (member == null) {
-                RestControllerUtil.throwException(RestControllerUtil.HTTPResponseStatus.NOT_FOUND, "One of the users is not found")
+                RestControllerUtil.throwException(
+                    RestControllerUtil.HTTPResponseStatus.NOT_FOUND,
+                    "One of the users is not found"
+                )
             }
             val memberEntry = ChatMemberEntity()
             memberEntry.key = ChatMemberKey()
@@ -142,7 +151,13 @@ class ChatController {
             listOfMembers.add(member.getResponseModel())
         }
         chatMemberRepository.saveAll(listOfEntries)
-        return ResponseChatModel(newChat.id!!.toString(), newChat.chatName!!, newChat.avatarFileName!!, listOfMembers, null)
+        return ResponseChatModel(
+            newChat.id!!.toString(),
+            newChat.chatName!!,
+            newChat.avatarFileName!!,
+            listOfMembers,
+            null
+        )
     }
 
     @PostMapping("/chat/post/message")
@@ -153,10 +168,16 @@ class ChatController {
         val currentUser = RestControllerUtil.getUserByToken(userRepository, token)
         val refChat = chatRepository.findByIdOrNull(UUID.fromString(requestedMessage.chatId))
         if (refChat == null || chatMemberRepository.findByRefChatEntityAndRefUserEntity(refChat, currentUser) == null) {
-            RestControllerUtil.throwException(RestControllerUtil.HTTPResponseStatus.NOT_FOUND, "Chat with this id is not found in your list of chats")
+            RestControllerUtil.throwException(
+                RestControllerUtil.HTTPResponseStatus.NOT_FOUND,
+                "Chat with this id is not found in your list of chats"
+            )
         }
         if (requestedMessage.messageContent.isBlank()) {
-            RestControllerUtil.throwException(RestControllerUtil.HTTPResponseStatus.BAD_REQUEST, "Message can't be empty")
+            RestControllerUtil.throwException(
+                RestControllerUtil.HTTPResponseStatus.BAD_REQUEST,
+                "Message can't be empty"
+            )
         }
         val message = MessageEntity()
         message.messageContent = requestedMessage.messageContent
@@ -177,7 +198,10 @@ class ChatController {
         val currentChat = chatRepository.findByIdOrNull(UUID.fromString(chatId))
         val currentChatMemberEntity = chatMemberRepository.findByRefChatEntityAndRefUserEntity(currentChat, currentUser)
         if (currentChatMemberEntity == null) {
-            RestControllerUtil.throwException(RestControllerUtil.HTTPResponseStatus.NOT_FOUND, "Chat with this id is not found in your list of chats")
+            RestControllerUtil.throwException(
+                RestControllerUtil.HTTPResponseStatus.NOT_FOUND,
+                "Chat with this id is not found in your list of chats"
+            )
         }
 
         val messageEntities = messageRepository.findByRefChatEntityOrderByCreationTimeDesc(currentChat!!)!!
@@ -206,14 +230,20 @@ class ChatController {
         val currentChat = chatRepository.findByIdOrNull(UUID.fromString(requestedChat.chatId))
         val currentChatMemberEntity = chatMemberRepository.findByRefChatEntityAndRefUserEntity(currentChat, currentUser)
         if (currentChatMemberEntity == null) {
-            RestControllerUtil.throwException(RestControllerUtil.HTTPResponseStatus.NOT_FOUND, "Chat with this id is not found in your list of chats")
+            RestControllerUtil.throwException(
+                RestControllerUtil.HTTPResponseStatus.NOT_FOUND,
+                "Chat with this id is not found in your list of chats"
+            )
         }
 
         val listOfNewMembers = mutableListOf<ChatMemberEntity>()
         for (phone in requestedChat.invitedChatMembersPhones) {
             val member = userRepository.findByPhone(phone)
             if (member == null) {
-                RestControllerUtil.throwException(RestControllerUtil.HTTPResponseStatus.NOT_FOUND, "One of the users is not found")
+                RestControllerUtil.throwException(
+                    RestControllerUtil.HTTPResponseStatus.NOT_FOUND,
+                    "One of the users is not found"
+                )
             }
             val memberEntry = ChatMemberEntity()
             memberEntry.key = ChatMemberKey()
@@ -236,7 +266,10 @@ class ChatController {
         val currentChat = chatRepository.findByIdOrNull(UUID.fromString(chatId))
         val currentChatMemberEntity = chatMemberRepository.findByRefChatEntityAndRefUserEntity(currentChat, currentUser)
         if (currentChatMemberEntity == null) {
-            RestControllerUtil.throwException(RestControllerUtil.HTTPResponseStatus.NOT_FOUND, "Chat with this id is not found in your list of chats")
+            RestControllerUtil.throwException(
+                RestControllerUtil.HTTPResponseStatus.NOT_FOUND,
+                "Chat with this id is not found in your list of chats"
+            )
         }
         chatMemberRepository.delete(currentChatMemberEntity!!)
     }
@@ -257,8 +290,15 @@ class ChatController {
             }
 
             var responseChatName = item.refChatEntity!!.chatName!!
-            if(responseUsers.size == 2){
+            if (responseUsers.size == 2) {
                 responseChatName = responseUsers[0].lastname!! + " " + responseUsers[0].firstname
+            }
+            var lastMessage: ResponseMessageModel?
+            try {
+                lastMessage = messageRepository.findByRefChatEntityOrderByCreationTimeDesc(item.refChatEntity!!)?.last()
+                    ?.parseToResponse()
+            } catch (e: NoSuchElementException) {
+                lastMessage = null
             }
 
             val chat = ResponseChatModel(
@@ -266,8 +306,8 @@ class ChatController {
                 chatName = responseChatName,
                 avatarFilepath = item.refChatEntity!!.avatarFileName!!,
                 chatMembers = responseUsers,
-                messageRepository.findByRefChatEntityOrderByCreationTimeDesc(item.refChatEntity!!)?.last()?.parseToResponse()
-            )
+                lastMessage
+                )
             resultList.add(chat)
         }
         return resultList

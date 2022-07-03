@@ -5,5 +5,6 @@ class ResponseChatModel(
     val chatName: String,
     val avatarFilepath: String,
     val chatMembers: List<ResponseUserModel>,
-    val lastMessage: ResponseMessageModel?
+    val lastMessage: ResponseMessageModel?,
+    val isChatPrivate: Boolean
 )

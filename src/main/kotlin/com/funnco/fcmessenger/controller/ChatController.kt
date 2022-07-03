@@ -103,7 +103,8 @@ class ChatController {
             secondUser.lastname!!,
             newChat.avatarFileName!!,
             responseUsers,
-            null
+            null,
+            true
         )
     }
 
@@ -157,7 +158,8 @@ class ChatController {
             newChat.chatName!!,
             newChat.avatarFileName!!,
             listOfMembers,
-            null
+            null,
+            false
         )
     }
 
@@ -290,13 +292,18 @@ class ChatController {
                 responseUsers.add(user.refUserEntity!!.getResponseModel())
             }
 
+            var isChatPrivate = false
+            var responseChatAvatar = item.refChatEntity!!.avatarFileName!!
             var responseChatName = item.refChatEntity!!.chatName!!
             if (responseUsers.size == 2 && responseChatName.matches("^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}___[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}\$".toRegex())) {
-                responseChatName = if(responseUsers[0].phone == currentUser.phone){
-                    responseUsers[1].lastname!! + " " + responseUsers[1].firstname
+                if(responseUsers[0].phone == currentUser.phone){
+                    responseChatName = responseUsers[1].lastname!! + " " + responseUsers[1].firstname
+                    responseChatAvatar = responseUsers[1].avatarFilename!!
                 } else {
-                    responseUsers[0].lastname!! + " " + responseUsers[0].firstname
+                    responseChatName = responseUsers[0].lastname!! + " " + responseUsers[0].firstname
+                    responseChatAvatar = responseUsers[0].avatarFilename!!
                 }
+                isChatPrivate = true
             }
             var lastMessage: ResponseMessageModel?
             try {
@@ -307,12 +314,15 @@ class ChatController {
                 lastMessage = null
             }
 
+
+
             val chat = ResponseChatModel(
                 chatId = item.refChatEntity!!.id!!.toString(),
                 chatName = responseChatName,
-                avatarFilepath = item.refChatEntity!!.avatarFileName!!,
+                avatarFilepath = responseChatAvatar,
                 chatMembers = responseUsers,
-                lastMessage
+                lastMessage,
+                isChatPrivate
             )
             resultList.add(chat)
         }

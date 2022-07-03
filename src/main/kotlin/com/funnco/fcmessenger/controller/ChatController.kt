@@ -295,7 +295,7 @@ class ChatController {
             }
             var lastMessage: ResponseMessageModel?
             try {
-                lastMessage = messageRepository.findByRefChatEntityOrderByCreationTimeDesc(item.refChatEntity!!)?.last()
+                lastMessage = messageRepository.findByRefChatEntityOrderByCreationTimeDesc(item.refChatEntity!!)?.first()
                     ?.parseToResponse()
             } catch (e: NoSuchElementException) {
                 lastMessage = null

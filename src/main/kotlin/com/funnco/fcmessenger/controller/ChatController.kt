@@ -241,13 +241,7 @@ class ChatController {
 
         val listOfNewMembers = mutableListOf<ChatMemberEntity>()
         for (phone in requestedChat.invitedChatMembersPhones) {
-            val member = userRepository.findByPhone(phone)
-            if (member == null) {
-                RestControllerUtil.throwException(
-                    RestControllerUtil.HTTPResponseStatus.NOT_FOUND,
-                    "One of the users is not found"
-                )
-            }
+            val member = userRepository.findByPhone(phone) ?: continue
             val memberEntry = ChatMemberEntity()
             memberEntry.key = ChatMemberKey()
             memberEntry.key!!.chatId = currentChat!!.id
@@ -256,6 +250,11 @@ class ChatController {
             memberEntry.refUserEntity = member
             memberEntry.lastCheck = Timestamp(System.currentTimeMillis())
             listOfNewMembers.add(memberEntry)
+        }
+        if(listOfNewMembers.isEmpty()){
+            RestControllerUtil.throwException(
+                RestControllerUtil.HTTPResponseStatus.NOT_FOUND,
+                "No new members are passed or their phones are incorrect")
         }
         chatMemberRepository.saveAll(listOfNewMembers)
     }

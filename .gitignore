@@ -27,7 +27,8 @@ bin/
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/
-
+build.gradle.kts
+/src/main/resources/application.properties
 ### NetBeans ###
 /nbproject/private/
 /nbbuild/

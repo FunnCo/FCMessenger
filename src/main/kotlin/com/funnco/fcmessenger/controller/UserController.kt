@@ -16,48 +16,62 @@ import java.util.*
 class UserController {
 
     private val TAG = "UserController"
+
     @Autowired
     private lateinit var userRepository: UserRepository
 
     @PostMapping("/user/leave_all")
-    fun invalidateCurrentToken(@RequestHeader("Authorization") token: String){
+    fun invalidateCurrentToken(@RequestHeader("Authorization") token: String) {
         val currentUser = RestControllerUtil.getUserByToken(userRepository, token)
-        try{
+        try {
             userRepository.clearToken(currentUser.userUid!!)
-        } catch (_: Exception){}
+        } catch (_: Exception) {
+        }
     }
 
     @PutMapping("/user/change/about")
-    fun updateUserInfo(@RequestHeader("Authorization") token: String, @RequestBody newInfo: RequestUserModel){
+    fun updateUserInfo(@RequestHeader("Authorization") token: String, @RequestBody newInfo: RequestUserModel) {
         val currentUser = RestControllerUtil.getUserByToken(userRepository, token)
-        if(UserUtil.isNumberValid(newInfo.phone!!)){
+        if (newInfo.phone != null && UserUtil.isNumberValid(newInfo.phone!!)) {
             RestControllerUtil.throwException(RestControllerUtil.HTTPResponseStatus.BAD_REQUEST, "Invalid phone number")
         }
-        currentUser.phone = newInfo.phone
-        currentUser.patronymic = newInfo.patronymic
-        currentUser.lastname = newInfo.lastname
-        currentUser.firstname = newInfo.firstname
-        currentUser.email = newInfo.email
-        if(newInfo.password != null){
+        if (newInfo.phone != null && userRepository.findByPhone(newInfo.phone!!) != null) {
+            RestControllerUtil.throwException(
+                RestControllerUtil.HTTPResponseStatus.BAD_REQUEST,
+                "New phone is already used by someone else"
+            )
+        }
+        currentUser.phone = newInfo.phone ?: currentUser.phone
+        currentUser.patronymic = newInfo.patronymic ?: currentUser.patronymic
+        currentUser.lastname = newInfo.lastname ?: currentUser.lastname
+        currentUser.firstname = newInfo.firstname ?: currentUser.firstname
+        currentUser.email = newInfo.email ?: currentUser.email
+        if (newInfo.password != null) {
             currentUser.password = HashingUtil.hashPassword(newInfo.password!!, currentUser.userUid!!)
         }
         userRepository.save(currentUser)
     }
 
     @GetMapping("/user/info")
-    fun getUserInfo(@RequestHeader("Authorization") token: String, @RequestParam phone: String?): ResponseUserModel{
+    fun getUserInfo(@RequestHeader("Authorization") token: String, @RequestParam phone: String?): ResponseUserModel {
         val authorizedUser = RestControllerUtil.getUserByToken(userRepository, token)
-        val requestedUser = if(phone == null){
+        val requestedUser = if (phone == null) {
             authorizedUser.getResponseModel()
         } else {
-            if(UserUtil.isNumberValid(phone)){
-                RestControllerUtil.throwException(RestControllerUtil.HTTPResponseStatus.BAD_REQUEST, "Invalid phone number")
+            if (UserUtil.isNumberValid(phone)) {
+                RestControllerUtil.throwException(
+                    RestControllerUtil.HTTPResponseStatus.BAD_REQUEST,
+                    "Invalid phone number"
+                )
             }
             userRepository.findByPhone(phone)?.getResponseModel()
         }
 
         if (requestedUser == null) {
-            RestControllerUtil.throwException(RestControllerUtil.HTTPResponseStatus.NOT_FOUND, "User with requested phone is not found")
+            RestControllerUtil.throwException(
+                RestControllerUtil.HTTPResponseStatus.NOT_FOUND,
+                "User with requested phone is not found"
+            )
         }
         val responseUser = ResponseUserModel()
         responseUser.email = requestedUser!!.email
@@ -71,7 +85,7 @@ class UserController {
     }
 
     @PostMapping("/user/change/avatar")
-    fun userChangeAvatar(@RequestHeader("Authorization") token: String, @RequestParam("image") image: MultipartFile){
+    fun userChangeAvatar(@RequestHeader("Authorization") token: String, @RequestParam("image") image: MultipartFile) {
         val currentUser = RestControllerUtil.getUserByToken(userRepository, token as String)
         image.transferTo(File("/usr/local/bin/server-exec/resources/user/user_${HashingUtil.md5Hash(currentUser.phone!!)}_avatar.png"))
 

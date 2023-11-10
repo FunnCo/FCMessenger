@@ -36,10 +36,10 @@ class UserController {
         if (newInfo.phone != null && UserUtil.isNumberValid(newInfo.phone!!)) {
             RestControllerUtil.throwException(RestControllerUtil.HTTPResponseStatus.BAD_REQUEST, "Invalid phone number")
         }
-        if (newInfo.phone != null && userRepository.findByPhone(newInfo.phone!!) != null) {
+        if ((newInfo.phone != null && userRepository.findByPhone(newInfo.phone!!) != null) || (newInfo.email != null && userRepository.findByEmail(newInfo.email!!) != null)) {
             RestControllerUtil.throwException(
                 RestControllerUtil.HTTPResponseStatus.BAD_REQUEST,
-                "New phone is already used by someone else"
+                "New phone or email is already used by someone else"
             )
         }
         currentUser.phone = newInfo.phone ?: currentUser.phone
@@ -50,6 +50,7 @@ class UserController {
         if (newInfo.password != null) {
             currentUser.password = HashingUtil.hashPassword(newInfo.password!!, currentUser.userUid!!)
         }
+        // TODO: Передача уже существующей почты
         userRepository.save(currentUser)
     }
 

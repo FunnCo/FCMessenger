@@ -72,7 +72,7 @@ class AuthController(
         // Check if user is already exists
         var currentUser = userRepository.findByEmailOrPhone(newUser.email, newUser.phone)
         if(currentUser != null){
-            RestControllerUtil.throwException(RestControllerUtil.HTTPResponseStatus.BAD_REQUEST, "User with same mail or phone already exists")
+            RestControllerUtil.throwException(RestControllerUtil.HTTPResponseStatus.BAD_REQUEST, "User with same email or phone already exists")
         }
 
         // Checking if all necessary fields are not empty

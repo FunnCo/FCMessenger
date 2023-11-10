@@ -67,7 +67,17 @@ class ChatController {
         newChat.chatName = chatCreator.userUid.toString() + "___" + secondUser!!.userUid.toString()
         val anotherVariantOfName = secondUser.userUid.toString() + "___" + chatCreator.userUid.toString()
 
-        if (chatRepository.findByChatName(newChat.chatName) != null || chatRepository.findByChatName(anotherVariantOfName) != null) {
+        // TODO: Протестируй создание чатов с одинаковыми названиями с разных аккаунтов
+        val possibleChat = chatRepository.findByChatName(newChat.chatName)
+        val possibleChatVariant = chatRepository.findByChatName(anotherVariantOfName)
+        if ((possibleChat != null
+                    && !chatMemberRepository.findByRefChatEntity(possibleChat)
+                ?.filter { it.refUserEntity?.userUid == chatCreator.userUid }.isNullOrEmpty())
+            ||
+            (possibleChatVariant != null
+                    && !chatMemberRepository.findByRefChatEntity(possibleChatVariant)
+                ?.filter { it.refUserEntity?.userUid == chatCreator.userUid }.isNullOrEmpty())
+        ) {
             RestControllerUtil.throwException(
                 RestControllerUtil.HTTPResponseStatus.BAD_REQUEST,
                 "This chat already exists"
@@ -109,7 +119,9 @@ class ChatController {
     }
 
     private fun createGroupChat(requestedChat: RequestChatCreationModel, chatCreator: UserEntity): ResponseChatModel {
-        if (chatRepository.findByChatName(requestedChat.chatName) != null) {
+        val possibleChat = chatRepository.findByChatName(requestedChat.chatName)
+        if (possibleChat != null && !chatMemberRepository.findByRefChatEntity(possibleChat)
+                ?.filter { it.refUserEntity?.userUid == chatCreator.userUid }.isNullOrEmpty()) {
             RestControllerUtil.throwException(
                 RestControllerUtil.HTTPResponseStatus.BAD_REQUEST,
                 "This chat already exists"
@@ -229,8 +241,13 @@ class ChatController {
         @RequestHeader("Authorization") token: String,
         @RequestBody requestedChat: RequestChatInvitationModel
     ) {
+        var currentChat: ChatEntity? = null
         val currentUser = RestControllerUtil.getUserByToken(userRepository, token)
-        val currentChat = chatRepository.findByIdOrNull(UUID.fromString(requestedChat.chatId))
+        try {
+            currentChat = chatRepository.findByIdOrNull(UUID.fromString(requestedChat.chatId))
+        } catch (e: Exception) {
+            // TODO: wrong uuid passed
+        }
         val currentChatMemberEntity = chatMemberRepository.findByRefChatEntityAndRefUserEntity(currentChat, currentUser)
         if (currentChatMemberEntity == null) {
             RestControllerUtil.throwException(
@@ -251,10 +268,11 @@ class ChatController {
             memberEntry.lastCheck = Timestamp(System.currentTimeMillis())
             listOfNewMembers.add(memberEntry)
         }
-        if(listOfNewMembers.isEmpty()){
+        if (listOfNewMembers.isEmpty()) {
             RestControllerUtil.throwException(
                 RestControllerUtil.HTTPResponseStatus.NOT_FOUND,
-                "No new members are passed or their phones are incorrect")
+                "No new members are passed or their phones are incorrect"
+            )
         }
         chatMemberRepository.saveAll(listOfNewMembers)
     }
@@ -300,7 +318,7 @@ class ChatController {
                 isChatPrivate = true
             }
             if (responseUsers.size == 2 && responseChatName.matches("^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}___[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}\$".toRegex())) {
-                if(responseUsers[0].phone == currentUser.phone){
+                if (responseUsers[0].phone == currentUser.phone) {
                     responseChatName = responseUsers[1].lastname!! + " " + responseUsers[1].firstname
                     responseChatAvatar = responseUsers[1].avatarFilename!!
                 } else {
@@ -317,7 +335,6 @@ class ChatController {
             } catch (e: NoSuchElementException) {
                 lastMessage = null
             }
-
 
 
             val chat = ResponseChatModel(

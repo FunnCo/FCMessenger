@@ -246,7 +246,7 @@ class ChatController {
         try {
             currentChat = chatRepository.findByIdOrNull(UUID.fromString(requestedChat.chatId))
         } catch (e: Exception) {
-            // TODO: wrong uuid passed
+            RestControllerUtil.throwException(RestControllerUtil.HTTPResponseStatus.BAD_REQUEST, "Invalid chat id. You can get correct chat id from /chat/my")
         }
         val currentChatMemberEntity = chatMemberRepository.findByRefChatEntityAndRefUserEntity(currentChat, currentUser)
         if (currentChatMemberEntity == null) {

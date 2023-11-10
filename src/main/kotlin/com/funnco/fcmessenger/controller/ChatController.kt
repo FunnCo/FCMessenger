@@ -294,6 +294,11 @@ class ChatController {
             var isChatPrivate = false
             var responseChatAvatar = item.refChatEntity!!.avatarFileName!!
             var responseChatName = item.refChatEntity!!.chatName!!
+            if (responseUsers.size == 1) {
+                responseChatName = responseUsers[0].lastname!! + " " + responseUsers[0].firstname
+                responseChatAvatar = responseUsers[0].avatarFilename!!
+                isChatPrivate = true
+            }
             if (responseUsers.size == 2 && responseChatName.matches("^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}___[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}\$".toRegex())) {
                 if(responseUsers[0].phone == currentUser.phone){
                     responseChatName = responseUsers[1].lastname!! + " " + responseUsers[1].firstname

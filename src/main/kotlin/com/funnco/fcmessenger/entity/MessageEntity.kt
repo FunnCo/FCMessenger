@@ -2,17 +2,17 @@ package com.funnco.fcmessenger.entity
 
 import com.funnco.fcmessenger.model.response.ResponseMessageModel
 import com.funnco.fcmessenger.model.response.ResponseUserModel
+import jakarta.persistence.*
 import org.hibernate.annotations.Type
 import java.sql.Timestamp
 import java.util.UUID
-import javax.persistence.*
+
 
 @Entity
 @Table(name = "message", schema = "messenger", catalog = "FCMessenger")
 class MessageEntity {
     @Id
     @Column(name = "message_uid", nullable = false)
-    @Type(type="org.hibernate.type.PostgresUUIDType")
     var messageUid: UUID? = null
 
     @Column(name = "message_content", nullable = true)

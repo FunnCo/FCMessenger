@@ -335,7 +335,7 @@ class ChatController {
         @RequestParam chatId: String
     ) {
         val currentUser = RestControllerUtil.getUserByToken(userRepository, token as String)
-        image.transferTo(File("/usr/local/bin/server-exec/resources/chat/chat_${HashingUtil.md5Hash(currentUser.phone!!)}_avatar.png"))
+        image.transferTo(File("/root/FCMessenger/resources/image/chat/chat_${HashingUtil.md5Hash(currentUser.phone!!)}_avatar.png"))
 
         val currentChat = chatRepository.findByIdOrNull(UUID.fromString(chatId))
         currentChat!!.avatarFileName = "chat_${HashingUtil.md5Hash(currentUser.phone!!)}_avatar.png"

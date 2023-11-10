@@ -4,6 +4,7 @@ import com.funnco.fcmessenger.entity.UserEntity
 import com.funnco.fcmessenger.model.request.RequestUserModel
 import com.funnco.fcmessenger.model.response.ResponseTokenHolderModel
 import com.funnco.fcmessenger.repository.UserRepository
+import com.funnco.fcmessenger.service.JwtService
 import com.funnco.fcmessenger.utils.HashingUtil
 import com.funnco.fcmessenger.utils.RestControllerUtil
 import com.funnco.fcmessenger.utils.UserUtil
@@ -19,7 +20,9 @@ import org.springframework.web.bind.annotation.RestController
 import java.util.*
 
 @RestController
-class AuthController {
+class AuthController(
+    val jwtService: JwtService
+) {
     private val TAG = "AuthController"
     @Autowired
     private lateinit var userRepository: UserRepository
@@ -28,7 +31,7 @@ class AuthController {
     fun authViaToken(@RequestHeader("Authorization") token: String): ResponseEntity<Void>{
         println("$TAG, /user/login/token: received request with token $token")
 
-        val currentUser = userRepository.findByToken(UUID.fromString(token))
+        val currentUser = userRepository.findByToken(token)
         if(currentUser == null){
             RestControllerUtil.throwException(RestControllerUtil.HTTPResponseStatus.NOT_FOUND, "Can't find user with passed token")
         }
@@ -55,7 +58,8 @@ class AuthController {
 
         // Generating token, if it didn't exist
         if(currentUser.token == null){
-            currentUser.token =  UUID.fromString(userRepository.generateToken(currentUser.userUid!!))
+            currentUser.token = jwtService.getTokenForUser(currentUser)
+//            currentUser.token =  UUID.fromString(userRepository.generateToken(currentUser.userUid!!))
             userRepository.save(currentUser)
         }
         return ResponseTokenHolderModel(currentUser.token!!.toString())

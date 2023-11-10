@@ -2,16 +2,15 @@ package com.funnco.fcmessenger.entity
 
 import com.funnco.fcmessenger.model.request.RequestUserModel
 import com.funnco.fcmessenger.model.response.ResponseUserModel
+import jakarta.persistence.*
 import org.hibernate.annotations.Type
 import java.util.UUID
-import javax.persistence.*
 
 @Entity
 @Table(name = "user", schema = "messenger", catalog = "FCMessenger")
 class UserEntity {
     @Id
     @Column(name = "user_uid", nullable = false)
-    @Type(type = "org.hibernate.type.PostgresUUIDType")
     var userUid: UUID? = null
 
     @Column(name = "firstname", nullable = false)
@@ -36,8 +35,7 @@ class UserEntity {
     var password: String? = null
 
     @Column(name = "token", nullable = true)
-    @Type(type = "org.hibernate.type.PostgresUUIDType")
-    var token: UUID? = null
+    var token: String? = null
 
 
     override fun toString(): String {

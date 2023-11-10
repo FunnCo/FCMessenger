@@ -24,9 +24,9 @@ object RestControllerUtil {
     }
 
     fun getUserByToken(userRepository: UserRepository, token: String): UserEntity {
-        val currentUser = userRepository.findByToken(UUID.fromString(token))
+        val currentUser = userRepository.findByToken(token)
         if (currentUser == null) {
-            RestControllerUtil.throwException(HTTPResponseStatus.UNAUTHORIZED, "Invalid token")
+            throwException(HTTPResponseStatus.UNAUTHORIZED, "Invalid token")
         }
         return currentUser!!
     }

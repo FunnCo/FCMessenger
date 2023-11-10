@@ -1,8 +1,9 @@
 package com.funnco.fcmessenger.entity
 
+import jakarta.persistence.*
 import org.hibernate.annotations.Type
 import java.util.UUID
-import javax.persistence.*
+
 
 @Entity
 @Table(name = "chat", schema = "messenger", catalog = "FCMessenger")
@@ -11,7 +12,6 @@ class ChatEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "chat_uid", nullable = false)
-    @Type(type="org.hibernate.type.PostgresUUIDType")
     var id: UUID? = null
 
     @Column(name = "chat_name", nullable = false)

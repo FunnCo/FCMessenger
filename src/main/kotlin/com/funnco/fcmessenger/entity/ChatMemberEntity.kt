@@ -2,7 +2,7 @@ package com.funnco.fcmessenger.entity
 
 import com.funnco.fcmessenger.entity.composite.ChatMemberKey
 import java.util.*
-import javax.persistence.*
+import jakarta.persistence.*
 
 @Entity
 @Table(name = "chat_member", schema = "messenger", catalog = "FCMessenger")

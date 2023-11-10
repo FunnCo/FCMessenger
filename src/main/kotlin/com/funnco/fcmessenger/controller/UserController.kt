@@ -56,7 +56,7 @@ class UserController {
     @GetMapping("/user/info")
     fun getUserInfo(@RequestHeader("Authorization") token: String, @RequestParam phone: String?): ResponseUserModel {
         val authorizedUser = RestControllerUtil.getUserByToken(userRepository, token)
-        val requestedUser = if (phone == null) {
+        val requestedUser = if (phone == null || phone == "null") {
             authorizedUser.getResponseModel()
         } else {
             if (UserUtil.isNumberValid(phone)) {

@@ -1,12 +1,13 @@
 package com.funnco.fcmessenger.controller
 
 import com.funnco.fcmessenger.entity.UserEntity
+import com.funnco.fcmessenger.interceptor.CurrentUser
 import com.funnco.fcmessenger.model.request.RequestUserModel
 import com.funnco.fcmessenger.model.response.ResponseTokenHolderModel
 import com.funnco.fcmessenger.repository.UserRepository
 import com.funnco.fcmessenger.service.JwtService
+import com.funnco.fcmessenger.service.UserService
 import com.funnco.fcmessenger.utils.HashingUtil
-import com.funnco.fcmessenger.utils.RestControllerUtil
 import com.funnco.fcmessenger.utils.UserUtil
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
@@ -15,22 +16,26 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestHeader
+import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.server.ResponseStatusException
 import java.util.*
 
 @RestController
+@RequestMapping("/auth")
 class AuthController(
-    val jwtService: JwtService
+    val userService: UserService,
+    val jwtService: JwtService,
+    val currentUser: CurrentUser
 ) {
     private val TAG = "AuthController"
     @Autowired
     private lateinit var userRepository: UserRepository
 
-    @GetMapping("/user/login/token")
+    @GetMapping("/refresh")
     fun authViaToken(@RequestHeader("Authorization") token: String): ResponseEntity<Void>{
-        println("$TAG, /user/login/token: received request with token $token")
-
         val currentUser = userRepository.findByToken(token)
         if(currentUser == null){
             RestControllerUtil.throwException(RestControllerUtil.HTTPResponseStatus.NOT_FOUND, "Can't find user with passed token")
@@ -38,7 +43,7 @@ class AuthController(
         return ResponseEntity<Void>(null, HttpStatus.OK)
     }
 
-    @GetMapping("/user/login")
+    @GetMapping("/signin")
     fun authViaPassword(@RequestParam email: String, password: String) : ResponseTokenHolderModel?{
         println("$TAG, /user/login: received request with email $email")
 
@@ -65,42 +70,18 @@ class AuthController(
         return ResponseTokenHolderModel(currentUser.token!!.toString())
     }
 
-    @PostMapping("/user/register")
+    @PostMapping("/signup")
+    @ResponseBody
     fun register(@RequestBody newUser: RequestUserModel){
-        println("$TAG, /user/register: received request for creating new user $newUser")
-
-        // Check if user is already exists
-        var currentUser = userRepository.findByEmailOrPhone(newUser.email, newUser.phone)
-        if(currentUser != null){
-            RestControllerUtil.throwException(RestControllerUtil.HTTPResponseStatus.BAD_REQUEST, "User with same email or phone already exists")
+        
+        try{
+            userService.createNewUser(newUser)
+        } catch (exception: Exception){
+            if(exception is ResponseStatusException){
+                throw exception
+            } else {
+                // TODO ...
+            }
         }
-
-        // Checking if all necessary fields are not empty
-        if(newUser.password == null || newUser.email == null || newUser.firstname == null || newUser.lastname == null || newUser.phone == null) {
-            RestControllerUtil.throwException(RestControllerUtil.HTTPResponseStatus.BAD_REQUEST, "Not all necessary fields are passed")
-        }
-
-        // Phone validation
-        if(UserUtil.isNumberValid(newUser.phone!!)){
-            RestControllerUtil.throwException(RestControllerUtil.HTTPResponseStatus.BAD_REQUEST, "Invalid phone number")
-        }
-
-        // Creating new user
-        currentUser = UserEntity()
-        currentUser.userUid = UUID.randomUUID()
-
-        // Hashing and salting for saving in DB
-        currentUser.password = HashingUtil.hashPassword(newUser.password!!, currentUser.userUid!!)
-
-        // Setting rest of the fields
-        currentUser.token = null
-        currentUser.email = newUser.email
-        currentUser.phone = newUser.phone
-        currentUser.firstname = newUser.firstname
-        currentUser.lastname = newUser.lastname
-        currentUser.patronymic = newUser.patronymic
-
-        // Saving user in DB
-        userRepository.save(currentUser)
     }
 }

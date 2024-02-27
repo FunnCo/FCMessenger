@@ -9,6 +9,9 @@ import org.springframework.data.repository.query.Param
 import java.util.*
 
 interface UserRepository : CrudRepository<UserEntity, UUID> {
+
+    fun existsByEmailOrPhone(email: String, phone: String): Boolean
+
     fun findByEmail(email: String): UserEntity?
     fun findByEmailOrPhone(email: String?, phone: String?): UserEntity?
     fun findByToken(token: String): UserEntity?

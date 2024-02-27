@@ -2,13 +2,14 @@ package com.funnco.fcmessenger.entity
 
 import com.funnco.fcmessenger.model.request.RequestUserModel
 import com.funnco.fcmessenger.model.response.ResponseUserModel
+import com.funnco.fcmessenger.utils.HashingUtil
 import jakarta.persistence.*
 import org.hibernate.annotations.Type
 import java.util.UUID
 
 @Entity
 @Table(name = "user", schema = "messenger", catalog = "FCMessenger")
-class UserEntity {
+class UserEntity() {
     @Id
     @Column(name = "user_uid", nullable = false)
     var userUid: UUID? = null
@@ -34,12 +35,18 @@ class UserEntity {
     @Column(name = "password", nullable = false)
     var password: String? = null
 
-    @Column(name = "token", nullable = true)
-    var token: String? = null
-
+    constructor(requestModel: RequestUserModel):this(){
+        this.userUid = UUID.randomUUID()
+        this.email = requestModel.email
+        this.phone = requestModel.phone
+        this.firstname = requestModel.firstname
+        this.lastname = requestModel.lastname
+        this.patronymic = requestModel.patronymic
+        this.password = HashingUtil.hashPassword(requestModel.password!!, this.userUid!!)
+    }
 
     override fun toString(): String {
-        return "UserEntity(userUid=$userUid, firstname=$firstname, lastname=$lastname, patronymic=$patronymic, avatarFilename=$avatarFilename, email=$email, phone=$phone, password=$password, token=$token)"
+        return "UserEntity(userUid=$userUid, firstname=$firstname, lastname=$lastname, patronymic=$patronymic, avatarFilename=$avatarFilename, email=$email, phone=$phone, password=$password)"
     }
 
     fun getRequestModel(): RequestUserModel {

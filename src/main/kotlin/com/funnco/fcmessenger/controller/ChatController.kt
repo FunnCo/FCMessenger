@@ -19,12 +19,14 @@ import com.funnco.fcmessenger.utils.HashingUtil
 import com.funnco.fcmessenger.utils.RestControllerUtil
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.repository.findByIdOrNull
+import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
 import java.io.File
@@ -43,10 +45,14 @@ class ChatController {
     @Autowired
     private lateinit var messageRepository: MessageRepository
 
+
     @Autowired
     private lateinit var chatMemberRepository: ChatMemberRepository
 
+    // TODO: default.png добавить
+    // TODO: Проветь приходит ли 201 код, а не 200
     @PostMapping("/chat/create")
+    @ResponseStatus(HttpStatus.CREATED)
     fun createChat(
         @RequestHeader("Authorization") token: String,
         @RequestBody requestedChat: RequestChatCreationModel

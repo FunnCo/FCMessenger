@@ -20,15 +20,6 @@ class UserController {
     @Autowired
     private lateinit var userRepository: UserRepository
 
-    @PostMapping("/user/leave_all")
-    fun invalidateCurrentToken(@RequestHeader("Authorization") token: String) {
-        val currentUser = RestControllerUtil.getUserByToken(userRepository, token)
-        try {
-            currentUser.token = null
-            userRepository.save(currentUser)
-        } catch (_: Exception) {
-        }
-    }
 
     @PutMapping("/user/change/about")
     fun updateUserInfo(@RequestHeader("Authorization") token: String, @RequestBody newInfo: RequestUserModel) {
